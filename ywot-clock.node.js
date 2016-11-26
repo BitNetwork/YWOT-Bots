@@ -1,6 +1,49 @@
 var lib_webSocket = require("websocket");
 var lib_chalk = require("chalk");
 
+var x = 1;
+var y = 0;
+
+var knownTiles = {};
+var editingTiles = {};
+
+function prepChanges(block) {
+  if (knownTiles[block] === editingTiles[block]) {
+    return false;
+  }
+  var outJSON = "{\"kind\": \"write\", \"edits\": [";
+
+  if (typeof knownTiles[block] !== "string" && typeof editingTiles[block] === "string") {
+    for (var i=0; i<editingTiles[block].length; i++) {
+      outJSON += "[" + block + ", " + Math.floor(i / 16) + ", " + (i - Math.floor(i / 16) * 16) + ", " + Date.now() + ", \"" + editingTiles[block][i] + "\", 1],";
+    }
+  } else {
+    for (var i=0; i<knownTiles[block].length; i++) {
+      if (knownTiles[block][i] !== editingTiles[block][i]) {
+        outJSON += "[" + block + ", " + Math.floor(i / 16) + ", " + (i - Math.floor(i / 16) * 16) + ", " + Date.now() + ", \"" + editingTiles[block][i] + "\", 1],";
+      }
+    }
+  }
+  outJSON = outJSON.substring(0, outJSON.length - 1);
+  outJSON += "]}";
+  if (outJSON.length !== 27) {
+    return outJSON;
+  }
+  return false;
+}
+
+function discardChanges(block) {
+  if (typeof block !== "string") {
+    editingTiles = {};
+    for (var key in knownTiles) {
+      editingTiles[key] = knownTiles[key];
+    }
+    return true;
+  }
+  editingTiles[block] = knownTiles[block];
+  return true;
+}
+
 
 var ws = new lib_webSocket.client();
 
@@ -20,68 +63,35 @@ ws.on("connect", function(conx) {
     console.log(lib_chalk.red.bgYellow.bold("Connection Closed!"));
   });
 
-  setTimeout(function() {
-    conx.on("message", function(message) {
-      if (message.type === "utf8") {
-        //console.log(lib_chalk.black.bgWhite.bold("Received: " + message.utf8Data));
-        var json = JSON.parse(message.utf8Data);
-        if (json.source === "write" && json.kind === "tileUpdate") {
-          //Do stuff here...
+
+  conx.on("message", function(message) {
+    if (message.type === "utf8") {
+      console.log(lib_chalk.black.bgWhite.bold("Received: " + message.utf8Data));
+      var json = JSON.parse(message.utf8Data);
+      if (json.source === "write" && json.kind === "tileUpdate") {
+        for (var key in json.tiles) {
+          knownTiles[key] = json.tiles[key].content;
         }
       }
-    });
-  }, 10000);
+    }
+  });
 
-
-  var x = 1;
-  var y = -1;
-
-  var timeInterval = setInterval(function() {
+  setInterval(function() {
     var date = new Date();
     var hours = date.getHours();
     var minutes = date.getMinutes();
     var seconds = date.getSeconds();
-    conx.send(JSON.stringify({kind: "write", edits: [
-      [x, y, 1, 4, Date.now, (hours.toString().length === 2 ? hours.toString()[0] : "0"), 1],
-      [x, y, 1, 5, Date.now, (hours.toString().length === 2 ? hours.toString()[1] : hours.toString()[0]), 1],
-      [x, y, 1, 6, Date.now, ":", 1],
-      [x, y, 1, 7, Date.now, (minutes.toString().length === 2 ? minutes.toString()[0] : "0"), 1],
-      [x, y, 1, 8, Date.now, (minutes.toString().length === 2 ? minutes.toString()[1] : minutes.toString()[0]), 1],
-      [x, y, 1, 9, Date.now, ":", 1],
-      [x, y, 1, 10, Date.now, (seconds.toString().length === 2 ? seconds.toString()[0] : "0"), 1],
-      [x, y, 1, 11, Date.now, (seconds.toString().length === 2 ? seconds.toString()[1] : seconds.toString()[0]), 1]
-    ]}));
-  }, 1000);
+    discardChanges();
+    if (typeof editingTiles[x + "," + y] !== "string") {
+      editingTiles[x + "," + y] = " ".repeat(128);
+    }
+    editingTiles[x + "," + y] = editingTiles[x + "," + y].substring(0, 3) + "┌────────┐" + editingTiles[x + "," + y].substring(13,19) + "│" + (hours.toString().length === 2 ? hours.toString()[0] : "0") + (hours.toString().length === 2 ? hours.toString()[1] : hours.toString()[0]) + ":" + (minutes.toString().length === 2 ? minutes.toString()[0] : "0") + (minutes.toString().length === 2 ? minutes.toString()[1] : minutes.toString()[0]) + ":" + (seconds.toString().length === 2 ? seconds.toString()[0] : "0") + (seconds.toString().length === 2 ? seconds.toString()[1] : seconds.toString()[0]) + "│" + editingTiles[x + "," + y].substring(29,35) + "│~BitByte│" + editingTiles[x + "," + y].substring(45,51) + "└────────┘" + editingTiles[x + "," + y].substring(61);
 
-  var designInterval = setInterval(function() {
-    conx.send(JSON.stringify({kind: "write", edits: [
-      [x, y, 0, 3, Date.now, "┌", 1],
-      [x, y, 0, 4, Date.now, "─", 1],
-      [x, y, 0, 5, Date.now, "─", 1],
-      [x, y, 0, 6, Date.now, "─", 1],
-      [x, y, 0, 7, Date.now, "─", 1],
-      [x, y, 0, 8, Date.now, "─", 1],
-      [x, y, 0, 9, Date.now, "─", 1],
-      [x, y, 0, 10, Date.now, "─", 1],
-      [x, y, 0, 11, Date.now, "─", 1],
-      [x, y, 0, 12, Date.now, "┐", 1],
+    if (prepChanges(x + "," + y) !== false) {
+      conx.send(prepChanges(x + "," + y));
+    }
 
-      [x, y, 1, 3, Date.now, "│", 1],
-      [x, y, 1, 12, Date.now, "│", 1],
-
-      [x, y, 2, 3, Date.now, "└", 1],
-      [x, y, 2, 4, Date.now, "─", 1],
-      [x, y, 2, 5, Date.now, "─", 1],
-      [x, y, 2, 6, Date.now, "─", 1],
-      [x, y, 2, 7, Date.now, "─", 1],
-      [x, y, 2, 8, Date.now, "─", 1],
-      [x, y, 2, 9, Date.now, "─", 1],
-      [x, y, 2, 10, Date.now, "─", 1],
-      [x, y, 2, 11, Date.now, "─", 1],
-      [x, y, 2, 12, Date.now, "┘", 1]
-    ]}));
-  }, 5000);
-
+  }, 500);
   //*/
 
 });
