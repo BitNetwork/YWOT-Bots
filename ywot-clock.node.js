@@ -1,8 +1,23 @@
 var lib_webSocket = require("websocket");
 var lib_chalk = require("chalk");
+var lib_readline = require("readline");
 
-var x = 1;
-var y = 0;
+var input = lib_readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
+
+function prompt(callback, pro) {
+  input.question((typeof pro === "string" ? pro : ">"), function(str) {
+    callback(str);
+    return prompt(callback, pro);
+  });
+}
+
+//prompt(function(str) { try { console.log(eval(str)); } catch (error) { console.log(error.message); } } );
+
+var x = 58;
+var y = -2;
 
 var knownTiles = {};
 var editingTiles = {};
@@ -78,9 +93,9 @@ ws.on("connect", function(conx) {
 
   setInterval(function() {
     var date = new Date();
-    var hours = date.getHours();
-    var minutes = date.getMinutes();
-    var seconds = date.getSeconds();
+    var hours = date.getUTCHours();
+    var minutes = date.getUTCMinutes();
+    var seconds = date.getUTCSeconds();
     discardChanges();
     if (typeof editingTiles[x + "," + y] !== "string") {
       editingTiles[x + "," + y] = " ".repeat(128);
@@ -96,4 +111,4 @@ ws.on("connect", function(conx) {
 
 });
 
-ws.connect("wss://www.yourworldoftext.com/ws/");
+ws.connect("wss://www.yourworldoftext.com/~InfraRaven/LawBook/ws/");
