@@ -155,13 +155,13 @@ ws.on("connect", function(conx) {
 
   setInterval(function() {
     var date = new Date();
-    var year = date.getFullYear();
-    var month = date.getMonth() + 1;
-    var day = date.getDate() + 1;
+    var year = date.getUTCFullYear();
+    var month = date.getUTCMonth() + 1;
+    var day = date.getUTCDate() + 1;
 
-    var hours = date.getHours();
-    var minutes = date.getMinutes();
-    var seconds = date.getSeconds();
+    var hours = date.getUTCHours();
+    var minutes = date.getUTCMinutes();
+    var seconds = date.getUTCSeconds();
     discardChanges();
     if (typeof editingTiles[x + "," + y] !== "string") {
       knownTiles[x + "," + y] = " ".repeat(128);
