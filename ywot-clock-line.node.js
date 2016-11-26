@@ -1,8 +1,8 @@
 var lib_webSocket = require("websocket");
 var lib_chalk = require("chalk");
 
-var x = 1;
-var y = -1;
+var x = -2;
+var y = -2;
 
 var knownTiles = {};
 var editingTiles = {};
@@ -136,9 +136,9 @@ ws.on("connect", function(conx) {
 
     editingTiles[x + "," + y] = editingTiles[x + "," + y].substring(0, 91) + "Hour " + editingTiles[x + "," + y].substring(96, 105) + "Minute " + editingTiles[x + "," + y].substring(112, 121) + "Second ";
     editingTiles[x + "," + (y + 1)] = editingTiles[x + "," + (y + 1)].substring(0, 80) + hourString.substring(0, 16) + minuteString.substring(0, 16) + secondString.substring(0, 16);
-    editingTiles[x + "," + (y + 2)] = editingTiles[x + "," + (y + 2)].substring(0, 80) + hourString.substring(16, 24) + editingTiles[x + "," + (y + 2)].substring(88, 96) + minuteString.substring(16, 32) + secondString.substring(16, 32);
-    editingTiles[x + "," + (y + 3)] = editingTiles[x + "," + (y + 3)].substring(0, 96) + minuteString.substring(32, 48) + secondString.substring(32, 48);
-    editingTiles[x + "," + (y + 4)] = editingTiles[x + "," + (y + 4)].substring(0, 96) + minuteString.substring(48, 60) + editingTiles[x + "," + (y + 4)].substring(108, 112) + secondString.substring(48, 60) + editingTiles[x + "," + (y + 4)].substring(124);
+    editingTiles[x + "," + (y + 2)] = editingTiles[x + "," + (y + 2)].substring(0, 80) + hourString.substring(16, 24) + "       2" + minuteString.substring(16, 32) + secondString.substring(16, 32);
+    editingTiles[x + "," + (y + 3)] = editingTiles[x + "," + (y + 3)].substring(0, 80) + "4-Hour  UTC+0:00" + minuteString.substring(32, 48) + secondString.substring(32, 48);
+    editingTiles[x + "," + (y + 4)] = editingTiles[x + "," + (y + 4)].substring(0, 80) + "  ~BitByte  " + editingTiles[x + "," + (y + 4)].substring(92, 96) + minuteString.substring(48, 60) + editingTiles[x + "," + (y + 4)].substring(108, 112) + secondString.substring(48, 60) + editingTiles[x + "," + (y + 4)].substring(124);
 
     if (prepChanges(x + "," + y) !== false) {
       conx.send(prepChanges(x + "," + y));
@@ -161,4 +161,4 @@ ws.on("connect", function(conx) {
 
 });
 
-ws.connect("wss://www.yourworldoftext.com/~BitByte/Bot/ws/");
+ws.connect("wss://www.yourworldoftext.com/ws/");
