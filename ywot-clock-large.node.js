@@ -1,20 +1,5 @@
 var lib_webSocket = require("websocket");
 var lib_chalk = require("chalk");
-var lib_readline = require("readline");
-
-var input = lib_readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-function prompt(callback, pro) {
-  input.question((typeof pro === "string" ? pro : ">"), function(str) {
-    callback(str);
-    return prompt(callback, pro);
-  });
-}
-
-prompt(function(str) { try { console.log(eval(str)); } catch (error) { console.log(error.message); } } );
 
 var x = 1;
 var y = -1;
