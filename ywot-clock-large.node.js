@@ -84,8 +84,8 @@ function drawDigit(digit) {
       break;
     case 5:
       outArray[0] = " ", outArray[3] = "_", outArray[6] = " ",
-      outArray[1] = " ", outArray[4] = "_", outArray[7] = "|",
-      outArray[2] = "|", outArray[5] = "_", outArray[8] = " ";
+      outArray[1] = "|", outArray[4] = "_", outArray[7] = " ",
+      outArray[2] = " ", outArray[5] = "_", outArray[8] = "|";
       break;
     case 6:
       outArray[0] = " ", outArray[3] = "_", outArray[6] = " ",
@@ -134,6 +134,7 @@ ws.on("connect", function(conx) {
 
   conx.on("error", function(error) {
     console.log(lib_chalk.red.bgYellow.bold("Connection Error: " + error.toString()));
+    ws.connect("wss://www.yourworldoftext.com/ws/");
   });
 
   conx.on("close", function() {
@@ -157,7 +158,7 @@ ws.on("connect", function(conx) {
     var date = new Date();
     var year = date.getUTCFullYear();
     var month = date.getUTCMonth() + 1;
-    var day = date.getUTCDate() + 1;
+    var day = date.getUTCDate();
 
     var hours = date.getUTCHours();
     var minutes = date.getUTCMinutes();
